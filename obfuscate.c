@@ -343,6 +343,10 @@ OpenSSH contains no GPL code.
 	****************************************************************************/
 
 #include <string.h>
+#ifdef ADD_BSD_STDLIB
+#include <bsd/stdlib.h>
+#endif
+#include <arpa/inet.h>
 #include <openssl/evp.h>
 #include <openssl/rc4.h>
 #include "obfuscate.h"
