@@ -11,6 +11,7 @@
 
 #include "putty.h"
 #include "tree234.h"
+#include "obfuscate.h"
 #include "ssh.h"
 #ifndef NO_GSSAPI
 #include "sshgssc.h"
@@ -122,6 +123,8 @@
 #define SSH2_MSG_USERAUTH_GSSAPI_ERROR                  64
 #define SSH2_MSG_USERAUTH_GSSAPI_ERRTOK                 65
 #define SSH2_MSG_USERAUTH_GSSAPI_MIC                    66
+
+extern int oblen;
 
 /*
  * Packet type contexts, so that ssh2_pkt_type can correctly decode
@@ -815,6 +818,7 @@ struct ssh_tag {
     void *logctx;
 
     unsigned char session_key[32];
+    int obfuscate;
     int v1_compressing;
     int v1_remote_protoflags;
     int v1_local_protoflags;
@@ -1671,7 +1675,24 @@ static int s_write(Ssh ssh, void *data, int len)
     if (ssh->logctx)
 	log_packet(ssh->logctx, PKT_OUTGOING, -1, NULL, data, len,
 		   0, NULL, NULL);
+
+    if (ssh->obfuscate)
+	obfuscate_output(data, len);
+
     return sk_write(ssh->s, (char *)data, len);
+}
+
+static int s_write_seed(Ssh ssh)
+{
+    void *our_seed;
+    int ret;
+    oblen=0;
+    our_seed=NULL;
+    our_seed=obfuscate_send_seed(); // from obfuscated-openssh
+    if ( our_seed==NULL ) bombout(("Hash length too small!"));
+    ret=sk_write(ssh->s, (char *)our_seed, oblen);
+    free(our_seed);
+    return ret;
 }
 
 static void s_wrpkt(Ssh ssh, struct Packet *pkt)
@@ -2755,6 +2776,10 @@ static int do_ssh_init(Ssh ssh, unsigned char c)
 	bombout(("SSH protocol version 1 required by user but not provided by server"));
 	crStop(0);
     }
+    if (conf_get_int(ssh->conf, CONF_sshprot) <= 1 && conf_get_int(ssh->conf, CONF_obfuscate)) {
+        bombout(("Obfuscation not supported in SSH protocol version 1"));
+        crStop(0);
+    }
     if (conf_get_int(ssh->conf, CONF_sshprot) == 3 && !s->proto2) {
 	bombout(("SSH protocol version 2 required by user but not provided by server"));
 	crStop(0);
@@ -2855,6 +2880,8 @@ static void ssh_set_frozen(Ssh ssh, int frozen)
 
 static void ssh_gotdata(Ssh ssh, unsigned char *data, int datalen)
 {
+    if (ssh->obfuscate) obfuscate_input(data, datalen);
+
     /* Log raw data, if we're in that mode. */
     if (ssh->logctx)
 	log_packet(ssh->logctx, PKT_INCOMING, -1, NULL, data, datalen,
@@ -6412,6 +6439,8 @@ static void do_ssh2_transport(Ssh ssh, void *vin, int inlen,
 	goto begin_key_exchange;
     }
 
+    ssh->obfuscate = ssh->kex_in_progress = FALSE;
+
     /*
      * Otherwise, schedule a timer for our next rekey.
      */
@@ -9718,6 +9747,9 @@ static const char *ssh_init(void *frontend_handle, void **backend_handle,
 						      CONF_ssh_rekey_data));
     ssh->kex_in_progress = FALSE;
 
+    ssh->obfuscate = conf_get_int(ssh->conf, CONF_obfuscate);
+    if(conf_get_int(ssh->conf, CONF_obfuscate)) conf_set_int(ssh->conf, CONF_sshprot, 2);
+
 #ifndef NO_GSSAPI
     ssh->gsslibs = NULL;
 #endif
@@ -9725,6 +9757,11 @@ static const char *ssh_init(void *frontend_handle, void **backend_handle,
     p = connect_to_host(ssh, host, port, realhost, nodelay, keepalive);
     if (p != NULL)
 	return p;
+
+    if(ssh->obfuscate){
+        obfuscate_set_keyword(conf_get_str(ssh->conf, CONF_obfuscate_keyword));
+        s_write_seed(ssh);
+    }
 
     random_ref();
 

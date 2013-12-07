@@ -2144,6 +2144,24 @@ void setup_config_box(struct controlbox *b, int midsession,
 		      HELPCTX(ssh_kex_repeat));
 	}
 
+	if (!midsession){
+	    s = ctrl_getset(b, "Connection/SSH/Kex", "none",
+			    "Obfuscation options");
+	    ctrl_checkbox(s, "Enable key exchange obfuscation", 'i',
+				 HELPCTX(obfuscate),
+				 conf_checkbox_handler,
+				 I(CONF_obfuscate));
+	    c = ctrl_editbox(s, "Keyword (OPTIONAL):", 'r', 100,
+				 HELPCTX(obfuscate_keyword),
+				 conf_editbox_handler,
+				 I(CONF_obfuscate_keyword),
+				 //I(sizeof(conf_get_str(conf, CONF_obfuscate_keyword)));
+				 I(64));
+	    c->editbox.password = 1;
+	    ctrl_text(s, "WARNING: Keyword is stored in clear text!",
+	                 HELPCTX(obfuscate_keyword));
+	}
+
 	if (!midsession) {
 
 	    /*

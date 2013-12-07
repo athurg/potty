@@ -2270,6 +2270,8 @@ static void usage(void)
     printf("  -unsafe   allow server-side wildcards (DANGEROUS)\n");
     printf("  -sftp     force use of SFTP protocol\n");
     printf("  -scp      force use of SCP protocol\n");
+    printf("  -z        obfuscate key exchange (SSH-2 only)\n");
+    printf("  -Z keywd  obfuscate with keyword (implies -z)\n");
 #if 0
     /*
      * -gui is an internal option, used by GUI front ends to get

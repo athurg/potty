@@ -463,6 +463,23 @@ int cmdline_process_param(char *p, char *value, int need_save, Conf *conf)
         filename_free(fn);
     }
 
+    if (!strcmp(p, "-z")) {
+        RETURN(1);
+        UNAVAILABLE_IN(TOOLTYPE_NONNETWORK);
+        SAVEABLE(0);
+        conf_set_int(conf, CONF_obfuscate, 1);
+        conf_set_int(conf, CONF_sshprot, 2);
+    }
+
+    if (!strcmp(p, "-Z")) {
+	RETURN(2);
+	UNAVAILABLE_IN(TOOLTYPE_NONNETWORK);
+	SAVEABLE(0);
+	conf_set_str(conf, CONF_obfuscate_keyword, value);
+	conf_set_int(conf, CONF_obfuscate, 1);
+	conf_set_int(conf, CONF_sshprot, 2);
+    }
+
     if (!strcmp(p, "-4") || !strcmp(p, "-ipv4")) {
 	RETURN(1);
 	SAVEABLE(1);

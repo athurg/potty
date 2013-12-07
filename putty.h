@@ -702,6 +702,8 @@ void cleanup_exit(int);
     X(INT, NONE, ssh_no_shell) /* avoid running a shell */ \
     X(STR, NONE, ssh_nc_host) /* host to connect to in `nc' mode */ \
     X(INT, NONE, ssh_nc_port) /* port to connect to in `nc' mode */ \
+    X(INT, NONE, obfuscate) /* obfuscate switch */ \
+    X(STR, NONE, obfuscate_keyword) /* obfuscate keywords */ \
     /* Telnet options */ \
     X(STR, NONE, termtype) \
     X(STR, NONE, termspeed) \
@@ -897,6 +899,9 @@ void conf_set_fontspec(Conf *conf, int key, const FontSpec *val);
 int conf_serialised_size(Conf *conf);
 void conf_serialise(Conf *conf, void *data);
 int conf_deserialise(Conf *conf, void *data, int maxsize);/*returns size used*/
+
+int obfuscate;
+char obfuscate_keyword[64];
 
 /*
  * Functions to copy, free, serialise and deserialise FontSpecs.

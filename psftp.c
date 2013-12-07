@@ -2672,6 +2672,8 @@ static void usage(void)
     printf("  -noagent  disable use of Pageant\n");
     printf("  -agent    enable use of Pageant\n");
     printf("  -batch    disable all interactive prompts\n");
+    printf("  -z        obfuscate key exchange (SSH-2 only)\n");
+    printf("  -Z keywd  obfuscate with keyword (implies -z)\n");
     cleanup_exit(1);
 }
 

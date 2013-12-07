@@ -584,6 +584,8 @@ static void usage(void)
     printf("            open tunnel in place of session (SSH-2 only)\n");
     printf("  -sercfg configuration-string (e.g. 19200,8,n,1,X)\n");
     printf("            Specify the serial configuration (serial only)\n");
+    printf("  -z        obfuscate key exchange (SSH-2 only)\n");
+    printf("  -Z keywd  obfuscate with keyword (implies -z)\n");
     exit(1);
 }
 
