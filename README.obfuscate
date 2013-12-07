@@ -1,0 +1,21 @@
+This is a patch version of putty, which support obfuscation!
+
+More about obfuscation please refer:
+
+	https://github.com/brl/obfuscated-openssh
+
+And it's based on Mr.Hinky Drink's Potty.
+
+I just apply his patch and modify it to work with *nix.
+
+For building on Unix:
+
+ - cd to unix/
+ - run `make -f Makefile.ux`
+
+For building on Linux:
+
+ - cd to unix.
+ - run `make -f Makefile.linux`
+
+There're some differences between standard unix and linux.
